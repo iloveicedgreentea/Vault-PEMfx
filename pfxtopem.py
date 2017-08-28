@@ -3,8 +3,6 @@ import argparse
 from os import path
 import vaultcom
 
-#todo: clean up code, add helpful messages, error handling
-
 parser = argparse.ArgumentParser(
     prog='PFXtoPEM',
     description='Converts MS stuff to the superior format and uploads it to Vault, if you specify the URL'
@@ -37,6 +35,8 @@ vault_subdir = args.secretpath
 class PemFormat:
     def convertpfx(self, password, file):
         # open the input file and extract data
+        print(f'Converting {file} to PEM \n')
+
         with open(file, 'rb') as pfx:
             pem_converter = crypto.load_pkcs12(pfx.read(), password)
             self.pem_key = crypto.dump_privatekey(crypto.FILETYPE_PEM, pem_converter.get_privatekey())
@@ -45,16 +45,19 @@ class PemFormat:
         # write key
         pem_file = path.splitext(file)[0]
         with open(pem_file + '-key.pem', 'wb') as file:
+            print(f'Writing key to {file.name}')
             file.write(self.pem_key)
 
         # write cert
         with open(pem_file + '-cert.pem', 'wb') as file:
+            print(f'Writing cert to {file.name}')
             file.write(self.pem_cert)
 
         # write ca, if any
         with open(pem_file + '-ca.pem', 'wb') as file:
             ca = pem_converter.get_ca_certificates()
             if ca is not None:
+                print(f'Writing ca data to {file.name} \n')
                 for cert in ca:
                     self.pem_ca = crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
                     file.write(self.pem_ca)
@@ -79,10 +82,10 @@ class PemFormat:
                     exit(0)
 
 if __name__ == "__main__":
-    print(f'Converting {pfx_file} to PEM')
     converter = PemFormat()
     converter.convertpfx(pfx_password, pfx_file)
     if vault_url is not None:
+        print('Sending secrets to Vault:')
         converter.upload_secret()
 
 

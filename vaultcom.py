@@ -47,7 +47,7 @@ class VaultCom:
     def put_vault_secret(self, secret_name, secret_value):
         api_call = f'{self.put_secret}{self.subdir}/{secret_name}'
         apidata = json.dumps({f"{secret_name}": f"{secret_value}"})
-        print(f'Uploading secret to {api_call}')
+        print(f'Uploading {secret_name} to {api_call}')
         return self.call_api(method='post', api=api_call, jsondata=apidata)
 
 
